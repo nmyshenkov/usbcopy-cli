@@ -7,7 +7,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"sort"
-	"strconv"
 )
 
 func main() {
@@ -18,25 +17,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// get usb devices
-	volumes, err := OSReadDir("/Volumes")
+	userVolumes, err := scanVolumes(currentUser.Uid)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var userVolumes []string
+	fmt.Println(userVolumes)
 
-	for _, volume := range volumes {
-		// if file is not owned current user - continue
-		if strconv.Itoa(int(volume.Owner)) != currentUser.Uid {
-			continue
-		}
-		userVolumes = append(userVolumes, volume.Name)
+	choose, err := getChosenVolume(userVolumes)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	if len(userVolumes) == 0 {
-		log.Fatal("User's devices not found")
-	}
+	fmt.Println(choose)
 
 	// get current dir
 	currentDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
@@ -56,5 +48,4 @@ func main() {
 	})
 
 	fmt.Println(files)
-
 }

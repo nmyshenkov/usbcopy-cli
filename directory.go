@@ -8,6 +8,7 @@ import (
 type File struct {
 	Name  string
 	Owner uint32
+	IsDir bool
 }
 
 // OSReadDir get all files from directory
@@ -29,7 +30,11 @@ func OSReadDir(root string) ([]File, error) {
 			continue
 		}
 
-		files = append(files, File{Name: file.Name(), Owner: fileSysInfo.Uid})
+		files = append(files, File{
+			Name:  file.Name(),
+			Owner: fileSysInfo.Uid,
+			IsDir: file.Mode().IsDir(),
+		})
 	}
 	return files, nil
 }
