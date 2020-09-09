@@ -22,20 +22,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(userVolumes)
-
 	choose, err := getChosenVolume(userVolumes)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(choose)
 
 	// get current dir
 	currentDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(currentDir)
 
 	// get file list
 	files, err := OSReadDir(currentDir)
@@ -47,5 +43,18 @@ func main() {
 		return files[i].Name < files[j].Name
 	})
 
-	fmt.Println(files)
+	// create directory
+	if err := os.MkdirAll(choose+filepath.Base(currentDir), os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		fmt.Print("Copy: ", file.Name, ":")
+		if _, err := copyFile(currentDir+"/"+file.Name, choose+filepath.Base(currentDir)+"/"+file.Name); err != nil {
+			fmt.Println(" \x1b[31merror: " + err.Error() + "\x1b[0m")
+			continue
+		}
+
+		fmt.Println(" \x1b[32mdone.\x1b[0m")
+	}
 }

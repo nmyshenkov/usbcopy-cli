@@ -3,12 +3,17 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strconv"
 )
 
+// VolumesPath contains path to volume place
+const VolumesPath = "/Volumes"
+
 func scanVolumes(uid string) ([]string, error) {
 	// get usb devices TODO:: detect OS and read mount folder
-	volumes, err := OSReadDir("/Volumes")
+	volumes, err := OSReadDir(VolumesPath)
 	if err != nil {
 		return nil, err
 	}
@@ -48,5 +53,31 @@ func getChosenVolume(userVolumes []string) (string, error) {
 	if _, err := fmt.Scan(&chosen); err != nil {
 		return "", err
 	}
-	return userVolumes[chosen-1], nil
+	return VolumesPath + "/" + userVolumes[chosen-1] + "/", nil
+}
+
+func copyFile(sourceFile, dstFile string) (int64, error) {
+	sourceFileStat, err := os.Stat(sourceFile)
+	if err != nil {
+		return 0, err
+	}
+
+	// we can copy just files
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", sourceFile)
+	}
+
+	source, err := os.Open(sourceFile)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dstFile)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
 }
