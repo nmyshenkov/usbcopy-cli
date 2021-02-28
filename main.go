@@ -17,11 +17,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// scan user's volumes in os
 	userVolumes, err := scanVolumes(currentUser.Uid)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// provides a selection of the desired volume
 	choose, err := getChosenVolume(userVolumes)
 	if err != nil {
 		log.Fatal(err)
@@ -33,7 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// get file list
+	// get file list in current dir
 	files, err := OSReadDir(currentDir)
 	if err != nil {
 		log.Fatal(err)
@@ -43,11 +45,12 @@ func main() {
 		return files[i].Name < files[j].Name
 	})
 
-	// create directory
+	// create directory in volume
 	if err := os.MkdirAll(choose+filepath.Base(currentDir), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
 
+	// copy sorted files to volume
 	for _, file := range files {
 		fmt.Print("Copy: ", file.Name, ":")
 		if _, err := copyFile(currentDir+"/"+file.Name, choose+filepath.Base(currentDir)+"/"+file.Name); err != nil {
